@@ -1,0 +1,1448 @@
+<!doctype html>
+<html lang="uk">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Figma MCP + Cursor/Claude</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Space+Mono&display=swap"
+			rel="stylesheet"
+		/>
+		<style>
+			:root {
+				--bg: #010101;
+				--card: #18191b;
+				--deep: #0e0f10;
+				--text: #ffffff;
+				--muted: rgba(255, 255, 255, 0.6);
+				--subtle: rgba(255, 255, 255, 0.24);
+				--accent: #01dd9a;
+				--rule-sky: #9dd4f0;
+			}
+			* {
+				box-sizing: border-box;
+				margin: 0;
+				padding: 0;
+			}
+			body {
+				font-family: 'Manrope', system-ui, sans-serif;
+				background: var(--bg);
+				color: var(--text);
+				overflow: hidden;
+			}
+			.deck {
+				height: 100dvh;
+				position: relative;
+			}
+			.slide {
+				display: none;
+				height: 100dvh;
+				padding: 3.5rem 4.5rem 5rem;
+				flex-direction: column;
+				justify-content: center;
+				max-width: 1180px;
+				margin: 0 auto;
+			}
+			.slide.active {
+				display: flex;
+			}
+			.tag {
+				font-size: 0.8125rem;
+				letter-spacing: 0.12em;
+				text-transform: uppercase;
+				color: var(--accent);
+				margin-bottom: 1.125rem;
+			}
+			h1 {
+				font-size: clamp(1.75rem, 4vw, 2.75rem);
+				line-height: 1.15;
+				margin-bottom: 1.25rem;
+				font-weight: 600;
+			}
+			h2 {
+				font-size: clamp(1.5rem, 3.4vw, 2.25rem);
+				line-height: 1.2;
+				margin-bottom: 1.625rem;
+				font-weight: 600;
+			}
+			p.sub {
+				font-size: 1.25rem;
+				color: var(--muted);
+				line-height: 1.5;
+				max-width: 42rem;
+			}
+			ul {
+				list-style: none;
+				font-size: clamp(1.0625rem, 2.2vw, 1.375rem);
+				line-height: 1.55;
+			}
+			ul li {
+				padding: 0.4rem 0 0.4rem 1.35rem;
+				position: relative;
+				color: var(--muted);
+			}
+			ul li::before {
+				content: '';
+				position: absolute;
+				left: 0;
+				top: 0.85rem;
+				width: 6px;
+				height: 6px;
+				background: var(--accent);
+				border-radius: 1px;
+			}
+			ul li strong {
+				color: var(--text);
+				font-weight: 600;
+			}
+			.cols {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 2rem;
+				margin-top: 0.5rem;
+			}
+			.cols h3 {
+				font-size: 0.8rem;
+				text-transform: uppercase;
+				letter-spacing: 0.08em;
+				color: var(--accent);
+				margin-bottom: 0.75rem;
+			}
+			code,
+			.mono {
+				font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+				font-size: 0.9em;
+				color: var(--accent);
+			}
+			.bad {
+				color: #f87171;
+			}
+			.good {
+				color: var(--accent);
+			}
+			.nav {
+				position: fixed;
+				bottom: 1.25rem;
+				right: 1.5rem;
+				display: flex;
+				gap: 0.5rem;
+				z-index: 10;
+			}
+			.nav button {
+				background: var(--card);
+				border: 1px solid rgba(255, 255, 255, 0.12);
+				color: var(--text);
+				padding: 0.5rem 1rem;
+				border-radius: 6px;
+				cursor: pointer;
+				font-size: 0.875rem;
+			}
+			.nav button:hover {
+				border-color: var(--accent);
+			}
+			.progress {
+				position: fixed;
+				bottom: 0;
+				left: 0;
+				height: 3px;
+				background: var(--accent);
+				transition: width 0.2s;
+			}
+			.counter {
+				position: fixed;
+				bottom: 1.35rem;
+				left: 1.5rem;
+				font-size: 0.8rem;
+				color: var(--muted);
+			}
+			/* —— Slide 1: title (PettersonApps brand) —— */
+			.slide-title {
+				position: relative;
+				justify-content: center;
+				max-width: none;
+				overflow: hidden;
+			}
+			.slide-title::before {
+				content: '';
+				position: absolute;
+				inset: 0;
+				background: radial-gradient(ellipse 80% 50% at 85% 15%, rgba(1, 221, 154, 0.08), transparent 55%);
+				pointer-events: none;
+			}
+			.title-dots {
+				position: absolute;
+				inset: 0;
+				pointer-events: none;
+				opacity: 0.9;
+			}
+			.title-dots span {
+				position: absolute;
+				background: var(--accent);
+			}
+			.title-dots .s2 {
+				width: 2px;
+				height: 2px;
+			}
+			.title-dots .s4 {
+				width: 4px;
+				height: 4px;
+			}
+			.title-inner {
+				position: relative;
+				flex: 1;
+				min-width: 0;
+			}
+			.title-eyebrow {
+				display: flex;
+				flex-direction: column;
+				align-items: flex-start;
+				gap: 0.55rem;
+				font-family: 'Manrope', sans-serif;
+				font-size: clamp(2.85rem, 6.2vw, 4.5rem);
+				font-weight: 700;
+				line-height: 1.1;
+				letter-spacing: -0.025em;
+				color: var(--text);
+				margin-bottom: 1.6rem;
+			}
+			.title-eyebrow .t-figma {
+				font-family: 'Space Mono', ui-monospace, monospace;
+				font-weight: 400;
+				color: var(--accent);
+				letter-spacing: 0.01em;
+			}
+			.title-eyebrow .t-tool {
+				font-size: 0.6em;
+				font-weight: 500;
+				color: rgba(255, 255, 255, 0.88);
+			}
+			.title-brand-group {
+				display: inline-flex;
+				align-items: center;
+				gap: 0.55rem;
+			}
+			.title-brand-icon {
+				width: 1.05em;
+				height: 1.05em;
+				flex-shrink: 0;
+			}
+			.title-brand-group--tool .title-brand-icon {
+				width: 0.5em;
+				height: 0.5em;
+			}
+			.title-brand-icon--cursor {
+				color: rgba(255, 255, 255, 0.92);
+			}
+			.title-brand-group--tool .title-brand-icon--figma {
+				width: 0.62em;
+				height: 0.62em;
+			}
+			.title-eyebrow .t-sep {
+				font-weight: 400;
+				color: rgba(255, 255, 255, 0.28);
+				user-select: none;
+			}
+			.title-tools-row {
+				display: flex;
+				flex-wrap: wrap;
+				align-items: center;
+				gap: 0.4rem 1.75rem;
+			}
+			.title-eyebrow--hero {
+				gap: 1.35rem;
+			}
+			.title-eyebrow--hero .t-figma {
+				display: block;
+				font-size: 1em;
+				line-height: 1.05;
+				letter-spacing: -0.02em;
+			}
+			.title-hero-tools {
+				display: flex;
+				flex-wrap: wrap;
+				align-items: center;
+				gap: 0.65rem 0.85rem;
+			}
+			.title-tool-pill {
+				display: inline-flex;
+				align-items: center;
+				gap: 0.5rem;
+				padding: 0.5rem 1rem 0.5rem 0.75rem;
+				background: rgba(255, 255, 255, 0.04);
+				border: 1px solid rgba(255, 255, 255, 0.1);
+				border-radius: 999px;
+				font-size: clamp(1rem, 1.75vw, 1.3rem);
+				font-weight: 500;
+				line-height: 1;
+				color: rgba(255, 255, 255, 0.92);
+				letter-spacing: -0.01em;
+			}
+			.title-tool-pill svg {
+				width: 1.2em;
+				height: 1.2em;
+				flex-shrink: 0;
+			}
+			.title-tool-pill--claude {
+				border-color: rgba(217, 119, 87, 0.25);
+				background: rgba(217, 119, 87, 0.06);
+			}
+			.title-subline {
+				display: flex;
+				flex-wrap: wrap;
+				align-items: baseline;
+				gap: 0.4rem 0.55rem;
+				font-size: clamp(1.2rem, 2.3vw, 1.55rem);
+				line-height: 1.45;
+				color: var(--muted);
+			}
+			.title-subline .sub-accent {
+				font-family: 'Space Mono', ui-monospace, monospace;
+				font-size: 0.95em;
+				letter-spacing: 0.03em;
+				color: var(--accent);
+			}
+			.title-subline .sub-aside {
+				font-size: 0.78em;
+			}
+			.setup-alt {
+				list-style: none;
+				margin: 0.4rem 0 0;
+				padding: 0;
+				font-size: clamp(0.85rem, 1.55vw, 1.05rem);
+				line-height: 1.5;
+				color: var(--muted);
+			}
+			.setup-alt li {
+				position: relative;
+				padding: 0.12rem 0 0.12rem 1.1rem;
+			}
+			.setup-alt li .term-cmd {
+				display: block;
+				margin-top: 0.15rem;
+				word-break: break-all;
+			}
+			.setup-alt li::before {
+				content: '';
+				position: absolute;
+				left: 0;
+				top: 0.58em;
+				width: 4px;
+				height: 4px;
+				border-radius: 50%;
+				background: var(--accent);
+			}
+			.setup-alt .sub-aside {
+				font-family: 'Space Mono', ui-monospace, monospace;
+				font-size: 0.9em;
+				color: var(--accent);
+			}
+			.setup-alt code,
+			.term-cmd {
+				font-family: 'Space Mono', ui-monospace, monospace;
+				font-size: 0.82em;
+			}
+			.term-cmd .term-bin {
+				color: #c8a8ff;
+			}
+			.term-cmd .term-args {
+				color: var(--rule-sky);
+			}
+			.title-layout {
+				position: relative;
+				z-index: 1;
+				display: flex;
+				flex-direction: column;
+				align-items: flex-start;
+				gap: 3.25rem;
+				width: 100%;
+				max-width: 1280px;
+				min-height: 17.1875rem;
+				margin: 0 auto;
+				padding: 0 4.5rem 0 2.75rem;
+				border-left: 4px solid var(--accent);
+			}
+			.title-flow {
+				display: flex;
+				align-items: stretch;
+				gap: 1.1rem;
+				width: 100%;
+				max-width: 56rem;
+			}
+			.flow-step {
+				flex: 1;
+				min-width: 0;
+				padding: 1.55rem 1.7rem;
+				background: var(--card);
+				border: 1px solid rgba(255, 255, 255, 0.08);
+				border-radius: 14px;
+			}
+			.flow-step--mid {
+				border-color: rgba(1, 221, 154, 0.35);
+				background: linear-gradient(180deg, rgba(1, 221, 154, 0.08) 0%, var(--card) 100%);
+			}
+			.flow-step-num {
+				font-family: 'Space Mono', ui-monospace, monospace;
+				font-size: 0.8125rem;
+				letter-spacing: 0.12em;
+				color: var(--accent);
+				margin-bottom: 0.75rem;
+			}
+			.flow-step-label {
+				font-size: 1.375rem;
+				font-weight: 600;
+				color: var(--text);
+				margin-bottom: 0.5rem;
+			}
+			.flow-step-hint {
+				font-family: 'Space Mono', ui-monospace, monospace;
+				font-size: 1rem;
+				line-height: 1.45;
+				color: var(--muted);
+				word-break: break-word;
+			}
+			.flow-step-hint .hint-accent {
+				color: var(--accent);
+			}
+			.flow-step-label--accent {
+				color: var(--accent);
+			}
+			.flow-step-hint--stack {
+				white-space: normal;
+				line-height: 1.4;
+			}
+			.flow-step-label--path {
+				font-size: clamp(0.85rem, 1.4vw, 1.125rem);
+				line-height: 1.25;
+			}
+			.slide-setup .flow-step {
+				min-width: 6.75rem;
+			}
+			.slide-setup .flow-step-label--path {
+				white-space: normal;
+			}
+			.flow-arrow {
+				flex-shrink: 0;
+				display: flex;
+				align-items: center;
+				font-family: 'Space Mono', ui-monospace, monospace;
+				font-size: 1.85rem;
+				color: var(--accent);
+				padding-top: 2rem;
+			}
+			.setup-foot {
+				font-size: clamp(0.95rem, 1.8vw, 1.125rem);
+				line-height: 1.5;
+				color: var(--muted);
+				max-width: 56rem;
+			}
+			.setup-foot .sub-accent {
+				font-family: 'Space Mono', ui-monospace, monospace;
+				color: var(--accent);
+			}
+			.title-layout-shell {
+				position: relative;
+				z-index: 1;
+				display: flex;
+				flex-direction: column;
+				width: 100%;
+				max-width: 1280px;
+				margin: 0 auto;
+			}
+			.setup-tag {
+				font-size: clamp(0.9rem, 1.85vw, 1.2rem);
+				font-weight: 400;
+				letter-spacing: 0.14em;
+				text-transform: uppercase;
+				color: var(--accent);
+				margin-bottom: 1.5rem;
+			}
+			.slide-setup .setup-tag {
+				flex-shrink: 0;
+				margin-bottom: 0.75rem;
+			}
+			.setup-tag-arrow {
+				color: rgba(255, 255, 255, 0.35);
+				margin: 0 0.35em;
+			}
+			.title-layout-shell .title-layout {
+				flex: 1;
+				min-height: 17.1875rem;
+				margin: 0;
+				max-width: none;
+				border-left: 4px solid var(--accent);
+				padding: 0 2rem 0 2.75rem;
+			}
+			.slide-setup-rules .title-layout-shell .title-layout {
+				min-height: 0;
+			}
+			.slide-setup-body {
+				position: relative;
+				z-index: 1;
+				display: flex;
+				align-items: center;
+				gap: clamp(1.25rem, 3vw, 2.75rem);
+				width: 100%;
+				max-width: 1680px;
+				margin: 0 auto;
+				padding: 0 2rem 0 4.5rem;
+			}
+			.slide-setup .title-layout-shell {
+				flex: 1;
+				min-width: 0;
+				max-width: none;
+				margin: 0;
+			}
+			.slide-setup .title-layout > .title-flow.title-flow--quad {
+				width: auto;
+				max-width: fit-content;
+				flex-wrap: wrap;
+			}
+			.slide-setup .title-layout > .title-flow.title-flow--quad .flow-step {
+				flex: 0 0 11.5rem;
+				width: 11.5rem;
+				max-width: 11.5rem;
+				min-width: 11.5rem;
+			}
+			.setup-screenshot {
+				flex-shrink: 0;
+				margin: 0;
+				width: clamp(360px, 44vw, 580px);
+				align-self: center;
+			}
+			.setup-screenshot.setup-screenshot--marketplace {
+				width: clamp(380px, 46vw, 520px);
+			}
+			.slide-setup-claude .setup-screenshot.setup-screenshot--marketplace {
+				width: clamp(500px, 56vw, 720px);
+			}
+			.slide-setup-claude .flow-hint-line {
+				display: block;
+			}
+			.slide-setup-claude .title-flow--quad .flow-step-hint--stack,
+			.slide-setup-claude .title-flow--quad .flow-step-label--path {
+				white-space: normal;
+			}
+			.slide-setup-figma .slide-setup-body {
+				justify-content: space-between;
+				gap: clamp(1.5rem, 4vw, 3.5rem);
+			}
+			.slide-setup-figma .title-layout-shell {
+				flex: 0 1 auto;
+			}
+			.slide-setup-figma .setup-screenshot.setup-screenshot--marketplace {
+				width: clamp(440px, 50vw, 640px);
+				margin-left: auto;
+			}
+			.slide-setup-figma .title-layout > .title-flow.title-flow--quad {
+				flex-wrap: nowrap;
+				max-width: 100%;
+				gap: 0.5rem;
+			}
+			.slide-setup-figma .title-layout > .title-flow.title-flow--quad .flow-step {
+				flex: 0 0 10.25rem;
+				width: 10.25rem;
+				max-width: 10.25rem;
+				min-width: 10.25rem;
+			}
+			.slide-setup-figma .title-flow--quad .flow-step-hint--stack {
+				white-space: normal;
+				font-size: 0.7rem;
+				line-height: 1.3;
+			}
+			.slide-setup-figma .title-flow--quad .flow-step-label {
+				white-space: nowrap;
+				font-size: clamp(0.82rem, 1.05vw, 1.1rem);
+			}
+			.slide-setup-figma .flow-step-label--dev {
+				font-family: 'Space Mono', ui-monospace, monospace;
+				font-size: clamp(0.78rem, 0.95vw, 0.95rem);
+				letter-spacing: 0.01em;
+			}
+			.slide-setup-figma .title-flow--quad .flow-step-hint {
+				white-space: nowrap;
+			}
+			.setup-screenshot img {
+				display: block;
+				width: 100%;
+				height: auto;
+				border-radius: 12px;
+				border: 1px solid rgba(255, 255, 255, 0.1);
+				box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+			}
+			.title-flow--quad .flow-step {
+				padding: 1.25rem 1.15rem;
+			}
+			.title-flow--quad .flow-step-label {
+				font-size: 1.2rem;
+			}
+			.title-flow--quad .flow-step-label--path {
+				white-space: nowrap;
+				font-size: clamp(0.8rem, 1.2vw, 1.05rem);
+			}
+			.title-flow--quad .flow-step-hint {
+				font-size: 0.8125rem;
+				white-space: nowrap;
+			}
+			.setup-visuals {
+				flex-shrink: 0;
+				display: flex;
+				flex-direction: column;
+				gap: 0.85rem;
+				width: clamp(380px, 46vw, 640px);
+			}
+			.rule-file {
+				background: #121316;
+				border: 1px solid rgba(255, 255, 255, 0.12);
+				border-radius: 12px;
+				padding: 0;
+				box-shadow: 0 16px 32px rgba(0, 0, 0, 0.35);
+				overflow: hidden;
+			}
+			.rule-file-breadcrumb {
+				font-family: 'Space Mono', ui-monospace, monospace;
+				font-size: 0.75rem;
+				color: var(--muted);
+				padding: 0.65rem 1rem;
+				border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+				background: rgba(255, 255, 255, 0.02);
+			}
+			.rule-file-breadcrumb .bc-blue {
+				color: var(--rule-sky);
+			}
+			.rule-blue {
+				color: var(--rule-sky);
+			}
+			.rule-hash {
+				color: var(--rule-sky);
+			}
+			.rule-file-code {
+				font-family: 'Space Mono', ui-monospace, monospace;
+				font-size: clamp(0.7rem, 1.05vw, 0.8125rem);
+				line-height: 1.55;
+				padding: 1rem 1.15rem 1.15rem;
+				color: rgba(255, 255, 255, 0.82);
+			}
+			.rule-file-code p {
+				margin: 0 0 0.15rem;
+			}
+			.rule-fm {
+				color: rgba(255, 255, 255, 0.35);
+			}
+			.rule-fm-line {
+				color: var(--muted);
+				padding-left: 0.15rem;
+			}
+			.rule-fm-key {
+				color: var(--accent);
+			}
+			.rule-fm-val {
+				color: var(--muted);
+			}
+			.rule-fm-bool {
+				color: #fcd34d;
+			}
+			.rule-gap {
+				height: 0.55rem;
+			}
+			.rule-heading {
+				color: var(--rule-sky);
+				font-weight: 600;
+				margin-top: 0.35rem;
+			}
+			.rule-heading--h2 {
+				color: var(--rule-sky);
+				font-weight: 500;
+				margin-top: 0.65rem;
+			}
+			.rule-heading--h2 .rule-h2-text {
+				color: var(--rule-sky);
+			}
+			.rule-num {
+				color: #fcd34d;
+			}
+			.rule-file-code ul,
+			.rule-file-code ol {
+				font-size: inherit;
+				margin: 0.35rem 0 0.5rem;
+				padding-left: 0;
+			}
+			.rule-file-code ul li,
+			.rule-file-code ol li {
+				padding: 0.12rem 0 0.12rem 1.1rem;
+				color: var(--muted);
+			}
+			.rule-file-code ul li::before {
+				width: 4px;
+				height: 4px;
+				top: 0.58rem;
+				background: var(--rule-sky);
+			}
+			.rule-file-code ol {
+				list-style: none;
+				counter-reset: rule-step;
+			}
+			.rule-file-code ol li {
+				counter-increment: rule-step;
+				padding-left: 1.35rem;
+			}
+			.rule-file-code ol li::before {
+				content: counter(rule-step) '.';
+				width: auto;
+				height: auto;
+				background: none;
+				color: #fcd34d;
+				font-size: 0.9em;
+				top: 0.12rem;
+				left: 0;
+			}
+			.rule-file-code code {
+				font-size: 0.92em;
+				color: var(--rule-sky);
+			}
+			.rule-file-code .rule-muted {
+				color: rgba(255, 255, 255, 0.45);
+			}
+			.setup-screenshot--apply {
+				width: min(400px, 88%);
+				align-self: flex-start;
+			}
+			.setup-screenshot--apply img {
+				border-radius: 10px;
+				box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+			}
+			.slide-setup-rules .title-eyebrow {
+				margin-bottom: 1rem;
+			}
+			.slide-setup-rules .title-tools-row {
+				flex-wrap: nowrap;
+				white-space: nowrap;
+				gap: 0.35rem 0.65rem;
+			}
+			.slide-setup-rules .title-eyebrow .t-sep {
+				font-size: 0.55em;
+				margin: 0 0.1rem;
+				flex-shrink: 0;
+			}
+			.slide-setup-rules .title-brand-group--tool {
+				flex-shrink: 0;
+			}
+			.slide-setup-rules .title-subline {
+				flex-wrap: nowrap;
+				white-space: nowrap;
+				font-size: clamp(0.9rem, 1.65vw, 1.2rem);
+			}
+			.slide-setup-rules .setup-alt-item--path,
+			.slide-setup-rules .setup-alt-item--path .sub-aside,
+			.slide-setup-rules .setup-alt-item--path code {
+				color: rgba(255, 255, 255, 0.92);
+			}
+			.setup-alt a {
+				color: var(--accent);
+				text-decoration: none;
+			}
+			.setup-alt a:hover {
+				text-decoration: underline;
+			}
+			.slide-setup-rules .slide-setup-body {
+				justify-content: space-between;
+				gap: clamp(1.25rem, 3.5vw, 3rem);
+			}
+			.slide-setup-rules .title-layout-shell {
+				flex: 0 1 32rem;
+				max-width: 32rem;
+				min-width: min(32rem, 100%);
+			}
+			.setup-visuals--rules {
+				display: grid;
+				grid-template-columns: 1.4fr 0.6fr;
+				gap: 0.75rem 1rem;
+				flex-shrink: 0;
+				width: clamp(700px, 71vw, 900px);
+				margin-left: auto;
+				align-items: start;
+			}
+			.slide-setup-rules .rules-visual-group--guide {
+				min-width: clamp(360px, 42vw, 540px);
+			}
+			.rules-visual-group {
+				display: flex;
+				flex-direction: column;
+				gap: 0.5rem;
+				min-width: 0;
+			}
+			.rules-visual-label {
+				font-family: 'Space Mono', ui-monospace, monospace;
+				font-size: clamp(0.62rem, 0.95vw, 0.72rem);
+				letter-spacing: 0.1em;
+				text-transform: uppercase;
+				color: var(--muted);
+				margin: 0;
+			}
+			.rules-visual-label a {
+				color: var(--accent);
+				text-decoration: none;
+				letter-spacing: 0.04em;
+				text-transform: none;
+			}
+			.rules-visual-label a:hover {
+				text-decoration: underline;
+			}
+			.rules-guide-shot {
+				margin: 0;
+			}
+			.rules-guide-shot img {
+				display: block;
+				width: 100%;
+				height: auto;
+				border-radius: 10px;
+				border: 1px solid rgba(255, 255, 255, 0.1);
+				box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+			}
+			.slide-setup-rules .rules-visual-group--ours {
+				gap: 0.6rem;
+			}
+			.slide-setup-rules .setup-screenshot--apply {
+				width: 100%;
+				max-width: none;
+				align-self: stretch;
+			}
+			.slide-setup-rules .rule-file {
+				font-size: 1.05em;
+			}
+			.slide-setup-rules .rule-file-code {
+				font-size: clamp(0.68rem, 0.95vw, 0.78rem);
+				padding: 0.9rem 1rem 1rem;
+			}
+			@media (max-width: 1280px) {
+				.slide-title {
+					padding: 2.25rem 2.25rem 3.5rem;
+				}
+				.title-layout {
+					gap: 2rem;
+					padding: 0 2rem 0 1.75rem;
+				}
+				.title-eyebrow {
+					font-size: clamp(2rem, 4.5vw, 3rem);
+					margin-bottom: 1.1rem;
+				}
+				.title-eyebrow--hero {
+					gap: 1rem;
+				}
+				.title-tool-pill {
+					font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+					padding: 0.4rem 0.8rem 0.4rem 0.65rem;
+				}
+				.title-subline {
+					font-size: clamp(1rem, 1.9vw, 1.2rem);
+				}
+				.setup-tag {
+					font-size: clamp(0.85rem, 1.55vw, 1rem);
+					margin-bottom: 1rem;
+				}
+				.flow-step {
+					padding: 1rem 0.95rem;
+					border-radius: 12px;
+				}
+				.flow-step-label {
+					font-size: 1.05rem;
+					margin-bottom: 0.35rem;
+				}
+				.flow-step-hint {
+					font-size: 0.8125rem;
+					line-height: 1.35;
+				}
+				.flow-arrow {
+					font-size: 1.35rem;
+					padding-top: 1.35rem;
+				}
+				.title-flow {
+					gap: 0.65rem;
+				}
+				.title-flow--quad .flow-step {
+					padding: 0.75rem 0.65rem;
+				}
+				.title-flow--quad .flow-step-label {
+					font-size: 0.95rem;
+				}
+				.title-flow--quad .flow-step-hint {
+					font-size: 0.625rem;
+					letter-spacing: -0.02em;
+				}
+				.slide-setup-body {
+					padding: 0 1.25rem 0 2.25rem;
+					gap: 1rem;
+					max-width: 100%;
+				}
+				.setup-visuals {
+					width: min(300px, 36vw);
+				}
+				.slide-setup-rules .title-layout-shell {
+					flex: 0 1 26rem;
+					max-width: 26rem;
+				}
+				.slide-setup-rules .title-subline {
+					font-size: clamp(0.82rem, 1.45vw, 1rem);
+				}
+				.setup-visuals--rules {
+					width: min(660px, 62vw);
+					grid-template-columns: 1.34fr 0.66fr;
+					gap: 0.65rem 0.8rem;
+				}
+				.slide-setup-rules .rules-visual-group--guide {
+					min-width: min(350px, 40vw);
+				}
+				.slide-setup-rules .setup-screenshot--apply {
+					max-width: none;
+				}
+				.setup-screenshot {
+					width: min(320px, 36vw);
+				}
+				.setup-screenshot.setup-screenshot--marketplace {
+					width: min(340px, 38vw);
+				}
+				.slide-setup-claude .setup-screenshot.setup-screenshot--marketplace {
+					width: min(460px, 50vw);
+				}
+				.slide-setup-figma .setup-screenshot.setup-screenshot--marketplace {
+					width: min(400px, 44vw);
+				}
+				.slide-setup-figma .title-layout > .title-flow.title-flow--quad .flow-step {
+					flex: 0 0 9.5rem;
+					width: 9.5rem;
+					max-width: 9.5rem;
+					min-width: 9.5rem;
+				}
+				.setup-alt {
+					font-size: clamp(0.75rem, 1.4vw, 0.9rem);
+				}
+				.setup-screenshot--apply {
+					width: 100%;
+					max-width: 280px;
+				}
+				.slide-setup .title-layout > .title-flow.title-flow--quad .flow-step {
+					flex: 0 0 10.75rem;
+					width: 10.75rem;
+					max-width: 10.75rem;
+					min-width: 10.75rem;
+				}
+			}
+			@media (max-width: 960px) {
+				.slide-setup-body {
+					flex-direction: column;
+					align-items: flex-start;
+					padding: 0 2rem;
+				}
+				.setup-screenshot {
+					width: min(460px, 92vw);
+					align-self: center;
+				}
+				.slide-setup-claude .setup-screenshot.setup-screenshot--marketplace {
+					width: min(600px, 96vw);
+				}
+				.slide-setup-figma .setup-screenshot.setup-screenshot--marketplace {
+					width: min(540px, 90vw);
+				}
+				.setup-visuals {
+					width: min(480px, 92vw);
+					align-self: center;
+				}
+				.setup-visuals--rules {
+					grid-template-columns: 1fr;
+					width: min(560px, 94vw);
+					margin-left: 0;
+				}
+			}
+			@media (max-width: 720px) {
+				.slide-setup .title-layout > .title-flow.title-flow--quad {
+					flex-direction: column;
+					max-width: 18rem;
+				}
+				.slide-setup .title-layout > .title-flow.title-flow--quad .flow-step {
+					flex: 0 0 auto;
+					width: 100%;
+					max-width: 18rem;
+					min-width: 0;
+				}
+				.slide-setup .title-layout > .title-flow.title-flow--quad .flow-arrow {
+					padding: 0;
+					justify-content: center;
+					transform: rotate(90deg);
+				}
+			}
+
+			@media print {
+				body {
+					overflow: visible;
+					background: #fff;
+					color: #111;
+				}
+				.slide {
+					display: flex !important;
+					height: auto;
+					min-height: 100vh;
+					page-break-after: always;
+					padding: 2rem;
+				}
+				.nav,
+				.counter,
+				.progress {
+					display: none !important;
+				}
+				ul li {
+					color: #333;
+				}
+				ul li::before {
+					background: #01a070;
+				}
+				.tag,
+				h1,
+				h2,
+				.good,
+				code {
+					color: #018f5f;
+				}
+				.bad {
+					color: #c00;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div class="deck" id="deck">
+			<section class="slide slide-title active">
+				<div class="title-dots" aria-hidden="true">
+					<span class="s2" style="left: 8%; top: 12%"></span>
+					<span class="s4" style="left: 22%; top: 8%"></span>
+					<span class="s2" style="left: 78%; top: 18%"></span>
+					<span class="s2" style="left: 92%; top: 28%"></span>
+					<span class="s4" style="left: 88%; top: 62%"></span>
+					<span class="s2" style="left: 6%; top: 72%"></span>
+					<span class="s2" style="left: 34%; top: 88%"></span>
+				</div>
+				<div class="title-layout">
+					<div class="title-inner">
+						<h1 class="title-eyebrow title-eyebrow--hero">
+							<span class="t-figma">Figma MCP</span>
+							<span class="title-hero-tools" aria-label="Інструменти">
+								<span class="title-tool-pill">
+									<svg class="title-brand-icon--cursor" viewBox="0 0 24 24" aria-hidden="true">
+										<path
+											fill="currentColor"
+											d="M11.503.131 1.891 5.678a.84.84 0 0 0-.42.726v11.188c0 .3.162.575.42.724l9.609 5.55a1 1 0 0 0 .998 0l9.61-5.55a.84.84 0 0 0 .42-.724V6.404a.84.84 0 0 0-.42-.726L12.497.131a1.01 1.01 0 0 0-.996 0M2.657 6.338h18.55c.263 0 .43.287.297.515L12.23 22.918c-.062.107-.229.064-.229-.06V12.335a.59.59 0 0 0-.295-.51l-9.11-5.257c-.109-.063-.064-.23.061-.23"
+										/>
+									</svg>
+									Cursor
+								</span>
+								<span class="title-tool-pill title-tool-pill--claude">
+									<svg viewBox="0 0 24 24" aria-hidden="true">
+										<path
+											fill="#D97757"
+											d="m4.7144 15.9555 4.7174-2.6471.079-.2307-.079-.1275h-.2307l-.7893-.0486-2.6956-.0729-2.3375-.0971-2.2646-.1214-.5707-.1215-.5343-.7042.0546-.3522.4797-.3218.686.0608 1.5179.1032 2.2767.1578 1.6514.0972 2.4468.255h.3886l.0546-.1579-.1336-.0971-.1032-.0972L6.973 9.8356l-2.55-1.6879-1.3356-.9714-.7225-.4918-.3643-.4614-.1578-1.0078.6557-.7225.8803.0607.2246.0607.8925.686 1.9064 1.4754 2.4893 1.8336.3643.3035.1457-.1032.0182-.0728-.164-.2733-1.3539-2.4467-1.445-2.4893-.6435-1.032-.17-.6194c-.0607-.255-.1032-.4674-.1032-.7285L6.287.1335 6.6997 0l.9957.1336.419.3642.6192 1.4147 1.0018 2.2282 1.5543 3.0296.4553.8985.2429.8318.091.255h.1579v-.1457l.1275-1.706.2368-2.0947.2307-2.6957.0789-.7589.3764-.9107.7468-.4918.5828.2793.4797.686-.0668.4433-.2853 1.8517-.5586 2.9021-.3643 1.9429h.2125l.2429-.2429.9835-1.3053 1.6514-2.0643.7286-.8196.85-.9046.5464-.4311h1.0321l.759 1.1293-.34 1.1657-1.0625 1.3478-.8804 1.1414-1.2628 1.7-.7893 1.36.0729.1093.1882-.0183 2.8535-.607 1.5421-.2794 1.8396-.3157.8318.3886.091.3946-.3278.8075-1.967.4857-2.3072.4614-3.4364.8136-.0425.0304.0486.0607 1.5482.1457.6618.0364h1.621l3.0175.2247.7892.522.4736.6376-.079.4857-1.2142.6193-1.6393-.3886-3.825-.9107-1.3113-.3279h-.1822v.1093l1.0929 1.0686 2.0035 1.8092 2.5075 2.3314.1275.5768-.3218.4554-.34-.0486-2.2039-1.6575-.85-.7468-1.9246-1.621h-.1275v.17l.4432.6496 2.3436 3.5214.1214 1.0807-.17.3521-.6071.2125-.6679-.1214-1.3721-1.9246L14.38 17.959l-1.1414-1.9428-.1397.079-.674 7.2552-.3156.3703-.7286.2793-.6071-.4614-.3218-.7468.3218-1.4753.3886-1.9246.3157-1.53.2853-1.9004.17-.6314-.0121-.0425-.1397.0182-1.4328 1.9672-2.1796 2.9446-1.7243 1.8456-.4128.164-.7164-.3704.0667-.6618.4008-.5889 2.386-3.0357 1.4389-1.882.929-1.0868-.0062-.1579h-.0546l-6.3385 4.1164-1.1293.1457-.4857-.4554.0608-.7467.2307-.2429 1.9064-1.3114Z"
+										/>
+									</svg>
+									Claude
+								</span>
+							</span>
+						</h1>
+						<p class="title-subline">
+							<span class="sub-accent">design-to-code</span>
+						</p>
+					</div>
+					<div class="title-flow title-flow--quad" aria-label="Workflow">
+						<div class="flow-step flow-step--mid">
+							<p class="flow-step-num">01</p>
+							<p class="flow-step-label flow-step-label--accent">Figma MCP</p>
+							<p class="flow-step-hint">frame + node-id</p>
+						</div>
+						<div class="flow-arrow" aria-hidden="true">→</div>
+						<div class="flow-step">
+							<p class="flow-step-num">02</p>
+							<p class="flow-step-label">Agent</p>
+							<p class="flow-step-hint">rules → implement</p>
+						</div>
+						<div class="flow-arrow" aria-hidden="true">→</div>
+						<div class="flow-step">
+							<p class="flow-step-num">03</p>
+							<p class="flow-step-label">Figma Plugin</p>
+							<p class="flow-step-hint">get_design_context</p>
+						</div>
+						<div class="flow-arrow" aria-hidden="true">→</div>
+						<div class="flow-step">
+							<p class="flow-step-num">04</p>
+							<p class="flow-step-label flow-step-label--path">UI match Figma</p>
+							<p class="flow-step-hint">result in code</p>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<section class="slide slide-title slide-setup slide-setup-figma" data-setup-step="1">
+				<div class="title-dots" aria-hidden="true">
+					<span class="s2" style="left: 11%; top: 15%"></span>
+					<span class="s4" style="left: 70%; top: 11%"></span>
+					<span class="s2" style="left: 92%; top: 28%"></span>
+					<span class="s4" style="left: 7%; top: 76%"></span>
+					<span class="s2" style="left: 74%; top: 78%"></span>
+				</div>
+				<div class="slide-setup-body">
+					<div class="title-layout-shell">
+						<p class="setup-tag">Setup <span class="setup-tag-arrow" aria-hidden="true">→</span> Step 1</p>
+						<div class="title-layout">
+						<div class="title-inner">
+							<h1 class="title-eyebrow">
+								<span class="title-tools-row">
+									<span class="title-brand-group title-brand-group--tool">
+										<svg class="title-brand-icon title-brand-icon--figma" viewBox="0 0 7.678 7.68" aria-hidden="true">
+											<path d="M1.28 1.28A1.28 1.28 0 0 1 2.559 0h1.28v2.56H2.56a1.28 1.28 0 0 1-1.28-1.28z" fill="#F24E1E" />
+											<path d="M3.84 0h1.28a1.28 1.28 0 0 1 0 2.56H3.84z" fill="#FF7262" />
+											<path d="M1.28 3.84a1.28 1.28 0 0 1 1.28-1.28h1.28v2.56H2.56a1.28 1.28 0 0 1-1.28-1.28z" fill="#A259FF" />
+											<path d="M6.4 3.84a1.28 1.28 0 0 1-2.56 0 1.28 1.28 0 0 1 2.56 0z" fill="#1ABCFE" />
+											<path d="M2.56 7.68A1.28 1.28 0 0 0 3.84 6.4V5.12H2.56a1.28 1.28 0 0 0 0 2.56z" fill="#0ACF83" />
+										</svg>
+										<span class="t-tool">Figma MCP</span>
+									</span>
+								</span>
+							</h1>
+							<p class="title-subline">
+								<span class="sub-accent">Desktop Dev Mode</span>
+								<span class="sub-aside">→ copy link to frame</span>
+							</p>
+						</div>
+						<div class="title-flow title-flow--quad" aria-label="Figma MCP setup">
+							<div class="flow-step">
+								<p class="flow-step-num">01</p>
+								<p class="flow-step-label">Figma Desktop</p>
+								<p class="flow-step-hint">app, not browser</p>
+							</div>
+							<div class="flow-arrow" aria-hidden="true">→</div>
+							<div class="flow-step">
+								<p class="flow-step-num">02</p>
+								<p class="flow-step-label flow-step-label--dev">&lt;/&gt; Dev Mode</p>
+								<p class="flow-step-hint">or Full seat</p>
+							</div>
+							<div class="flow-arrow" aria-hidden="true">→</div>
+							<div class="flow-step flow-step--mid">
+								<p class="flow-step-num">03</p>
+								<p class="flow-step-label">MCP enabled</p>
+								<p class="flow-step-hint">Inspect panel</p>
+							</div>
+							<div class="flow-arrow" aria-hidden="true">→</div>
+							<div class="flow-step">
+								<p class="flow-step-num">04</p>
+								<p class="flow-step-label">Copy link</p>
+								<p class="flow-step-hint">selected frame</p>
+							</div>
+						</div>
+						</div>
+					</div>
+					<figure class="setup-screenshot setup-screenshot--marketplace">
+						<img
+							src="figma-mcp-devmode.png"
+							alt="Figma Desktop — Dev Mode, MCP enabled, Copy link"
+							width="1024"
+							height="833"
+						/>
+					</figure>
+				</div>
+			</section>
+
+			<section class="slide slide-title slide-setup" data-setup-step="2">
+				<div class="title-dots" aria-hidden="true">
+					<span class="s2" style="left: 12%; top: 14%"></span>
+					<span class="s4" style="left: 76%; top: 10%"></span>
+					<span class="s2" style="left: 90%; top: 32%"></span>
+					<span class="s2" style="left: 5%; top: 68%"></span>
+					<span class="s4" style="left: 82%; top: 70%"></span>
+				</div>
+				<div class="slide-setup-body">
+					<div class="title-layout-shell">
+						<p class="setup-tag">Setup <span class="setup-tag-arrow" aria-hidden="true">→</span> Step 2</p>
+						<div class="title-layout">
+						<div class="title-inner">
+							<h1 class="title-eyebrow">
+								<span class="title-tools-row">
+									<span class="title-brand-group title-brand-group--tool">
+										<svg class="title-brand-icon title-brand-icon--cursor" viewBox="0 0 24 24" aria-hidden="true">
+										<path
+											fill="currentColor"
+											d="M11.503.131 1.891 5.678a.84.84 0 0 0-.42.726v11.188c0 .3.162.575.42.724l9.609 5.55a1 1 0 0 0 .998 0l9.61-5.55a.84.84 0 0 0 .42-.724V6.404a.84.84 0 0 0-.42-.726L12.497.131a1.01 1.01 0 0 0-.996 0M2.657 6.338h18.55c.263 0 .43.287.297.515L12.23 22.918c-.062.107-.229.064-.229-.06V12.335a.59.59 0 0 0-.295-.51l-9.11-5.257c-.109-.063-.064-.23.061-.23"
+										/>
+									</svg>
+									<span class="t-tool">Cursor</span>
+								</span>
+							</span>
+						</h1>
+						<p class="title-subline">
+							<span class="sub-accent">Figma Plugin = MCP + skills</span>
+							<span class="sub-aside">→ convenient workflow</span>
+						</p>
+					</div>
+					<div class="title-flow title-flow--quad" aria-label="Cursor setup">
+						<div class="flow-step">
+							<p class="flow-step-num">01</p>
+							<p class="flow-step-label flow-step-label--path">Settings → Plugins</p>
+							<p class="flow-step-hint">Marketplace → <span class="hint-accent">Figma</span></p>
+						</div>
+						<div class="flow-arrow" aria-hidden="true">→</div>
+						<div class="flow-step flow-step--mid">
+							<p class="flow-step-num">02</p>
+							<p class="flow-step-label">Figma Plugin</p>
+							<p class="flow-step-hint"><span class="hint-accent">MCP</span> config + skills</p>
+						</div>
+						<div class="flow-arrow" aria-hidden="true">→</div>
+						<div class="flow-step">
+							<p class="flow-step-num">03</p>
+							<p class="flow-step-label flow-step-label--path">Connect → OAuth</p>
+							<p class="flow-step-hint">whoami → email OK</p>
+						</div>
+					</div>
+						</div>
+					</div>
+					<figure class="setup-screenshot setup-screenshot--marketplace">
+						<img
+							src="figma-plugin-screenshot.png"
+							alt="Cursor Marketplace — Figma plugin: MCP + skills"
+							width="913"
+							height="1024"
+						/>
+					</figure>
+				</div>
+			</section>
+
+			<section class="slide slide-title slide-setup slide-setup-claude" data-setup-step="3">
+				<div class="title-dots" aria-hidden="true">
+					<span class="s2" style="left: 14%; top: 16%"></span>
+					<span class="s4" style="left: 72%; top: 8%"></span>
+					<span class="s2" style="left: 88%; top: 30%"></span>
+					<span class="s4" style="left: 6%; top: 74%"></span>
+					<span class="s2" style="left: 78%; top: 76%"></span>
+				</div>
+				<div class="slide-setup-body">
+					<div class="title-layout-shell">
+						<p class="setup-tag">Setup <span class="setup-tag-arrow" aria-hidden="true">→</span> Step 3</p>
+						<div class="title-layout">
+						<div class="title-inner">
+							<h1 class="title-eyebrow">
+								<span class="title-tools-row">
+									<span class="title-brand-group title-brand-group--tool">
+										<svg class="title-brand-icon" viewBox="0 0 24 24" aria-hidden="true">
+											<path
+												fill="#D97757"
+												d="m4.7144 15.9555 4.7174-2.6471.079-.2307-.079-.1275h-.2307l-.7893-.0486-2.6956-.0729-2.3375-.0971-2.2646-.1214-.5707-.1215-.5343-.7042.0546-.3522.4797-.3218.686.0608 1.5179.1032 2.2767.1578 1.6514.0972 2.4468.255h.3886l.0546-.1579-.1336-.0971-.1032-.0972L6.973 9.8356l-2.55-1.6879-1.3356-.9714-.7225-.4918-.3643-.4614-.1578-1.0078.6557-.7225.8803.0607.2246.0607.8925.686 1.9064 1.4754 2.4893 1.8336.3643.3035.1457-.1032.0182-.0728-.164-.2733-1.3539-2.4467-1.445-2.4893-.6435-1.032-.17-.6194c-.0607-.255-.1032-.4674-.1032-.7285L6.287.1335 6.6997 0l.9957.1336.419.3642.6192 1.4147 1.0018 2.2282 1.5543 3.0296.4553.8985.2429.8318.091.255h.1579v-.1457l.1275-1.706.2368-2.0947.2307-2.6957.0789-.7589.3764-.9107.7468-.4918.5828.2793.4797.686-.0668.4433-.2853 1.8517-.5586 2.9021-.3643 1.9429h.2125l.2429-.2429.9835-1.3053 1.6514-2.0643.7286-.8196.85-.9046.5464-.4311h1.0321l.759 1.1293-.34 1.1657-1.0625 1.3478-.8804 1.1414-1.2628 1.7-.7893 1.36.0729.1093.1882-.0183 2.8535-.607 1.5421-.2794 1.8396-.3157.8318.3886.091.3946-.3278.8075-1.967.4857-2.3072.4614-3.4364.8136-.0425.0304.0486.0607 1.5482.1457.6618.0364h1.621l3.0175.2247.7892.522.4736.6376-.079.4857-1.2142.6193-1.6393-.3886-3.825-.9107-1.3113-.3279h-.1822v.1093l1.0929 1.0686 2.0035 1.8092 2.5075 2.3314.1275.5768-.3218.4554-.34-.0486-2.2039-1.6575-.85-.7468-1.9246-1.621h-.1275v.17l.4432.6496 2.3436 3.5214.1214 1.0807-.17.3521-.6071.2125-.6679-.1214-1.3721-1.9246L14.38 17.959l-1.1414-1.9428-.1397.079-.674 7.2552-.3156.3703-.7286.2793-.6071-.4614-.3218-.7468.3218-1.4753.3886-1.9246.3157-1.53.2853-1.9004.17-.6314-.0121-.0425-.1397.0182-1.4328 1.9672-2.1796 2.9446-1.7243 1.8456-.4128.164-.7164-.3704.0667-.6618.4008-.5889 2.386-3.0357 1.4389-1.882.929-1.0868-.0062-.1579h-.0546l-6.3385 4.1164-1.1293.1457-.4857-.4554.0608-.7467.2307-.2429 1.9064-1.3114Z"
+											/>
+										</svg>
+										<span class="t-tool">Claude</span>
+									</span>
+								</span>
+							</h1>
+							<p class="title-subline">
+								<span class="sub-accent">Figma Plugin = MCP + skills</span>
+								<span class="sub-aside">→ convenient workflow</span>
+							</p>
+							<ul class="setup-alt">
+								<li>
+									<span class="sub-aside">UI</span> — Customize in Claude: browser (claude.ai) or desktop app
+								</li>
+								<li>
+									<span class="sub-aside">Terminal</span> —
+									<code class="term-cmd"><span class="term-bin">claude</span> <span class="term-args">plugin install figma@claude-plugins-official</span></code>
+								</li>
+							</ul>
+						</div>
+						<div class="title-flow title-flow--quad" aria-label="Claude setup">
+							<div class="flow-step">
+								<p class="flow-step-num">01</p>
+								<p class="flow-step-label">Customize</p>
+								<p class="flow-step-hint flow-step-hint--stack">
+									<span class="flow-hint-line">Connectors → <span class="hint-accent">Figma</span></span>
+									<span class="flow-hint-line">Plugins → <span class="hint-accent">Figma</span></span>
+								</p>
+							</div>
+							<div class="flow-arrow" aria-hidden="true">→</div>
+							<div class="flow-step flow-step--mid">
+								<p class="flow-step-num">02</p>
+								<p class="flow-step-label">Figma Plugin</p>
+								<p class="flow-step-hint"><span class="hint-accent">MCP</span> config + skills</p>
+							</div>
+							<div class="flow-arrow" aria-hidden="true">→</div>
+							<div class="flow-step">
+								<p class="flow-step-num">03</p>
+								<p class="flow-step-label flow-step-label--path">Connect → OAuth</p>
+								<p class="flow-step-hint">whoami → email OK</p>
+							</div>
+						</div>
+						</div>
+					</div>
+					<figure class="setup-screenshot setup-screenshot--marketplace">
+						<img
+							src="figma-claude-connectors.png"
+							alt="Claude Customize — Personal plugins → Figma: MCP + skills"
+							width="1024"
+							height="608"
+						/>
+					</figure>
+				</div>
+			</section>
+
+			<section class="slide slide-title slide-setup slide-setup-rules" data-setup-step="4">
+				<div class="slide-setup-body">
+					<div class="title-layout-shell">
+						<p class="setup-tag">Setup <span class="setup-tag-arrow" aria-hidden="true">→</span> Step 4</p>
+						<div class="title-layout">
+							<div class="title-inner">
+								<h1 class="title-eyebrow">
+									<span class="title-tools-row">
+										<span class="title-brand-group title-brand-group--tool">
+											<svg class="title-brand-icon title-brand-icon--cursor" viewBox="0 0 24 24" aria-hidden="true">
+												<path
+													fill="currentColor"
+													d="M11.503.131 1.891 5.678a.84.84 0 0 0-.42.726v11.188c0 .3.162.575.42.724l9.609 5.55a1 1 0 0 0 .998 0l9.61-5.55a.84.84 0 0 0 .42-.724V6.404a.84.84 0 0 0-.42-.726L12.497.131a1.01 1.01 0 0 0-.996 0M2.657 6.338h18.55c.263 0 .43.287.297.515L12.23 22.918c-.062.107-.229.064-.229-.06V12.335a.59.59 0 0 0-.295-.51l-9.11-5.257c-.109-.063-.064-.23.061-.23"
+												/>
+											</svg>
+											<span class="t-tool">Cursor</span>
+										</span>
+										<span class="t-sep" aria-hidden="true">·</span>
+										<span class="title-brand-group title-brand-group--tool">
+											<svg class="title-brand-icon" viewBox="0 0 24 24" aria-hidden="true">
+												<path
+													fill="#D97757"
+													d="m4.7144 15.9555 4.7174-2.6471.079-.2307-.079-.1275h-.2307l-.7893-.0486-2.6956-.0729-2.3375-.0971-2.2646-.1214-.5707-.1215-.5343-.7042.0546-.3522.4797-.3218.686.0608 1.5179.1032 2.2767.1578 1.6514.0972 2.4468.255h.3886l.0546-.1579-.1336-.0971-.1032-.0972L6.973 9.8356l-2.55-1.6879-1.3356-.9714-.7225-.4918-.3643-.4614-.1578-1.0078.6557-.7225.8803.0607.2246.0607.8925.686 1.9064 1.4754 2.4893 1.8336.3643.3035.1457-.1032.0182-.0728-.164-.2733-1.3539-2.4467-1.445-2.4893-.6435-1.032-.17-.6194c-.0607-.255-.1032-.4674-.1032-.7285L6.287.1335 6.6997 0l.9957.1336.419.3642.6192 1.4147 1.0018 2.2282 1.5543 3.0296.4553.8985.2429.8318.091.255h.1579v-.1457l.1275-1.706.2368-2.0947.2307-2.6957.0789-.7589.3764-.9107.7468-.4918.5828.2793.4797.686-.0668.4433-.2853 1.8517-.5586 2.9021-.3643 1.9429h.2125l.2429-.2429.9835-1.3053 1.6514-2.0643.7286-.8196.85-.9046.5464-.4311h1.0321l.759 1.1293-.34 1.1657-1.0625 1.3478-.8804 1.1414-1.2628 1.7-.7893 1.36.0729.1093.1882-.0183 2.8535-.607 1.5421-.2794 1.8396-.3157.8318.3886.091.3946-.3278.8075-1.967.4857-2.3072.4614-3.4364.8136-.0425.0304.0486.0607 1.5482.1457.6618.0364h1.621l3.0175.2247.7892.522.4736.6376-.079.4857-1.2142.6193-1.6393-.3886-3.825-.9107-1.3113-.3279h-.1822v.1093l1.0929 1.0686 2.0035 1.8092 2.5075 2.3314.1275.5768-.3218.4554-.34-.0486-2.2039-1.6575-.85-.7468-1.9246-1.621h-.1275v.17l.4432.6496 2.3436 3.5214.1214 1.0807-.17.3521-.6071.2125-.6679-.1214-1.3721-1.9246L14.38 17.959l-1.1414-1.9428-.1397.079-.674 7.2552-.3156.3703-.7286.2793-.6071-.4614-.3218-.7468.3218-1.4753.3886-1.9246.3157-1.53.2853-1.9004.17-.6314-.0121-.0425-.1397.0182-1.4328 1.9672-2.1796 2.9446-1.7243 1.8456-.4128.164-.7164-.3704.0667-.6618.4008-.5889 2.386-3.0357 1.4389-1.882.929-1.0868-.0062-.1579h-.0546l-6.3385 4.1164-1.1293.1457-.4857-.4554.0608-.7467.2307-.2429 1.9064-1.3114Z"
+												/>
+											</svg>
+											<span class="t-tool">Claude</span>
+										</span>
+									</span>
+								</h1>
+								<p class="title-subline">
+									<span class="sub-accent">figma-to-code.mdc</span>
+									<span class="sub-aside">— add custom project rules</span>
+								</p>
+								<ul class="setup-alt">
+									<li class="setup-alt-item--path">
+										<span class="sub-aside">Cursor</span> —
+										<code>.cursor/rules</code>
+									</li>
+									<li class="setup-alt-item--path">
+										<span class="sub-aside">Claude</span> —
+										<code>.claude/skills</code>
+									</li>
+									<li>Experiment to find what works best for you</li>
+									<li>Dramatically reduces the need for repetitive prompting</li>
+									<li>Break down large selections — components, not whole screens</li>
+									<li>
+										<span class="sub-aside">Guide</span> —
+										<a href="https://github.com/figma/mcp-server-guide" target="_blank" rel="noopener noreferrer"
+											>figma/mcp-server-guide</a
+										>
+									</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+					<div class="setup-visuals setup-visuals--rules">
+						<div class="rules-visual-group rules-visual-group--guide">
+							<figure class="rules-guide-shot">
+								<img
+									src="figma-guide-integration-rules.png"
+									alt="Figma MCP Integration Rules — required flow and implementation rules"
+									width="771"
+									height="476"
+								/>
+							</figure>
+							<figure class="rules-guide-shot">
+								<img
+									src="figma-guide-rules-cursor-claude.png"
+									alt="Cursor and Claude Code — Figma MCP server rules examples"
+									width="766"
+									height="499"
+								/>
+							</figure>
+						</div>
+						<div class="rules-visual-group rules-visual-group--ours">
+							<figure class="setup-screenshot setup-screenshot--apply">
+								<img
+									src="figma-apply-intelligently.png"
+									alt="Apply Intelligently — figma-to-code.mdc у Cursor"
+									width="400"
+									height="320"
+								/>
+							</figure>
+							<div class="rule-file">
+							<p class="rule-file-breadcrumb">
+								<span class="bc-blue">.cursor</span> › <span class="bc-blue">rules</span> ›
+								<span class="bc-blue">figma-to-code.mdc</span>
+							</p>
+							<div class="rule-file-code">
+								<p class="rule-fm">---</p>
+								<p class="rule-fm-line">
+									<span class="rule-fm-key">description</span><span class="rule-fm-val">:</span>
+									<span class="rule-fm-val"> Figma design-to-code workflow for this Next.js project</span>
+								</p>
+								<p class="rule-fm-line">
+									<span class="rule-fm-key">alwaysApply</span><span class="rule-fm-val">:</span>
+									<span class="rule-fm-bool"> false</span>
+								</p>
+								<p class="rule-fm">---</p>
+								<div class="rule-gap" aria-hidden="true"></div>
+								<p class="rule-heading"><span class="rule-hash">#</span> Figma design-to-code</p>
+								<p class="rule-heading rule-heading--h2">
+									<span class="rule-hash">##</span> <span class="rule-h2-text">MCP — required</span>
+								</p>
+								<ol>
+									<li>Frame link with <code>node-id</code></li>
+									<li><code>get_design_context</code> before any code</li>
+									<li>Truncated response → <code>get_metadata</code> + child nodes</li>
+									<li>No MCP — don't implement</li>
+								</ol>
+								<p class="rule-heading rule-heading--h2">
+									<span class="rule-hash">##</span> <span class="rule-h2-text">Repo adaptation</span>
+								</p>
+								<ul>
+									<li>Project tokens &amp; breakpoints — no hardcoding</li>
+									<li>Code in feature modules · copy in i18n</li>
+									<li>Assets per repo rules (icons / public)</li>
+									<li>Only the breakpoint band from the task</li>
+								</ul>
+							</div>
+						</div>
+						</div>
+					</div>
+				</div>
+			</section>
+		</div>
+
+		<div class="counter" id="counter">1 / 5</div>
+		<div class="progress" id="progress"></div>
+		<nav class="nav">
+			<button type="button" id="prev">←</button>
+			<button type="button" id="next">→</button>
+		</nav>
+
+		<script>
+			const slides = [...document.querySelectorAll('.slide')]
+			let i = 0
+			const counter = document.getElementById('counter')
+			const progress = document.getElementById('progress')
+
+			function show(n) {
+				i = Math.max(0, Math.min(n, slides.length - 1))
+				slides.forEach((s, j) => s.classList.toggle('active', j === i))
+				counter.textContent = `${i + 1} / ${slides.length}`
+				progress.style.width = `${((i + 1) / slides.length) * 100}%`
+			}
+
+			document.getElementById('prev').onclick = () => show(i - 1)
+			document.getElementById('next').onclick = () => show(i + 1)
+			document.addEventListener('keydown', e => {
+				if (e.key === 'ArrowRight' || e.key === ' ') {
+					e.preventDefault()
+					show(i + 1)
+				}
+				if (e.key === 'ArrowLeft') show(i - 1)
+			})
+			show(0)
+		</script>
+	</body>
+</html>
